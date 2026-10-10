@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#12372a">
+<title>Metal PiDi — Orët e punës</title>
+<style>
+:root{--bg:#f3f6f4;--card:#fff;--ink:#17231d;--muted:#607067;--green:#176b45;--green2:#e1f3e8;--line:#dce6df;--danger:#a12727}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:#12372a;color:#fff;padding:20px 16px 18px}header .top{display:flex;align-items:center;gap:12px;max-width:820px;margin:auto}
+.logo{width:46px;height:46px;border-radius:13px;background:#e0f2e8;color:#12372a;display:grid;place-items:center;font-weight:900;font-size:18px}
+h1{font-size:23px;margin:0}header p{margin:3px 0 0;color:#d4e8dc;font-size:13px}
+main{max-width:820px;margin:18px auto;padding:0 13px 40px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px #102b1b08}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 5px}
+input,select,button{font:inherit}input,select{width:100%;padding:12px;border:1px solid #cbd8cf;border-radius:10px;background:#fff;color:var(--ink);min-height:44px}
+button{border:0;border-radius:10px;padding:12px 14px;min-height:44px;font-weight:700;cursor:pointer}
+.primary{background:var(--green);color:white}.secondary{background:var(--green2);color:#145435}.plain{background:#edf1ee;color:#27372e}.danger{background:#fae7e7;color:var(--danger)}
+.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}.hidden{display:none!important}
+.notice{padding:11px 12px;border-radius:10px;background:#edf5ef;color:#245238;font-size:13px;margin-bottom:12px}.notice.error{background:#fae7e7;color:#8b2020}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{background:#f3f8f4;border-radius:12px;padding:13px}.stat strong{display:block;font-size:24px;color:#145435}.stat span{font-size:12px;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:700}
+.entry{padding:11px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}.entry:last-child{border:0}
+.smallbtn{padding:7px 10px;min-height:34px;font-size:12px}.footer{text-align:center;color:var(--muted);font-size:12px;padding:10px}
+#appView{display:none}.language{margin-left:auto;width:auto;padding:8px 10px;min-height:38px}
+@media(min-width:600px){.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.two .card{margin-bottom:0}.two{margin-bottom:14px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="logo">MP</div><div><h1>Metal PiDi</h1><p id="tagline">Regjistrimi i orëve të punës</p></div><select class="language" id="lang" aria-label="Language"><option value="sq">SQ</option><option value="it">IT</option></select></div></header>
+<main>
+<div id="configView" class="card">
+<h2 id="configTitle">Lidhja me databazën</h2>
+<p class="muted" id="configInfo">Vendos URL-në e projektit Supabase dhe çelësin publik anon. Këto ruhen vetëm në këtë shfletues.</p>
+<div class="notice" id="safeNote">Përdor vetëm çelësin publik anon/publishable. Mos vendos kurrë service_role key.</div>
+<label for="projectUrl">Supabase Project URL</label><input id="projectUrl" placeholder="https://projekti.supabase.co" autocomplete="url">
+<label for="anonKey">Supabase anon / publishable key</label><input id="anonKey" placeholder="sb_publishable_... ose eyJ..." autocomplete="off">
+<div class="row" style="margin-top:14px"><button class="primary" id="connectBtn">Lidhu / Connetti</button><button class="plain" id="forgetBtn">Pastro konfigurimin</button></div>
+<p class="muted" style="margin-bottom:0" id="configHelp">URL-në e gjen te Supabase → Project Settings → API. Çelësi publik gjendet në të njëjtin seksion.</p>
+</div>
+
+<div id="authView" class="card hidden">
+<h2 id="authTitle">Hyr ose krijo llogari</h2><div id="message" class="notice hidden"></div>
+<div class="two">
+<div class="card" style="padding:0;border:0;box-shadow:none">
+<h3 id="loginTitle">Hyrje / Accedi</h3>
+<label id="emailLoginLabel" for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email">
+<label id="passwordLoginLabel" for="loginPassword">Fjalëkalimi</label><input id="loginPassword" type="password" autocomplete="current-password">
+<button class="primary" id="loginBtn" style="width:100%;margin-top:14px">Hyr / Accedi</button>
+</div>
+<div class="card" style="padding:0;border:0;box-shadow:none">
+<h3 id="signupTitle">Regjistrim / Registrati</h3>
+<label id="nameLabel" for="fullName">Emri dhe mbiemri</label><input id="fullName" autocomplete="name">
+<label id="emailSignupLabel" for="signupEmail">Email</label><input id="signupEmail" type="email" autocomplete="email">
+<label id="passwordSignupLabel" for="signupPassword">Fjalëkalimi (min. 8 karaktere)</label><input id="signupPassword" type="password" autocomplete="new-password" minlength="8">
+<button class="secondary" id="signupBtn" style="width:100%;margin-top:14px">Regjistrohu / Registrati</button>
+<p class="muted" id="signupHint">Llogaritë e reja krijohen si punëtorë. Pronari caktohet veçmas në mënyrë të sigurt.</p>
+</div>
+</div></div>
+
+<div id="appView">
+<div class="card"><div class="row" style="align-items:center"><div style="flex:2"><h2 id="welcomeTitle" style="margin-bottom:3px">Mirë se erdhe</h2><div class="muted" id="userRole"></div></div><button class="plain" id="logoutBtn">Dil / Esci</button></div><div id="appMessage" class="notice hidden" style="margin-top:12px"></div></div>
+<div class="two">
+<div class="card">
+<h2 id="addTitle">Regjistro orët e ditës</h2>
+<label id="dateLabel" for="workDate">Data</label><input id="workDate" type="date">
+<label id="hoursLabel" for="hours">Orët totale</label><input id="hours" type="number" min="0" max="24" step="0.25" placeholder="p.sh. 8">
+<div class="row" style="margin-top:13px"><button class="primary" id="saveHoursBtn">Ruaj orët / Salva</button></div>
+<p class="muted" id="entryHint">Një regjistrim për çdo ditë. Nëse e ruan përsëri të njëjtën datë, orët përditësohen.</p>
+</div>
+<div class="card">
+<h2 id="monthTitle">Përmbledhja mujore</h2>
+<label id="monthLabel" for="monthPick">Muaji</label><input id="monthPick" type="month">
+<div class="stats"><div class="stat"><strong id="monthTotal">0</strong><span id="hoursCaption">orë gjithsej</span></div><div class="stat"><strong id="daysTotal">0</strong><span id="daysCaption">ditë të regjistruara</span></div></div>
+</div>
+</div>
+<div class="card"><h2 id="historyTitle">Regjistrimet e mia</h2><div id="entriesList" class="muted">Nuk ka regjistrime për këtë muaj.</div></div>
+<div id="ownerPanel" class="card hidden"><h2 id="ownerTitle">Paneli i pronarit</h2><p class="muted" id="ownerHint">Totali mujor i çdo punëtori.</p><div id="ownerContent"></div></div>
+</div>
+<div class="footer">Metal PiDi · <span id="footerText">Versioni fillestar</span></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const $ = id => document.getElementById(id);
+let sb=null, currentUser=null, currentProfile=null, entries=[];
+const T={
+sq:{tagline:"Regjistrimi i orëve të punës",configTitle:"Lidhja me databazën",configInfo:"Vendos URL-në e projektit Supabase dhe çelësin publik anon. Këto ruhen vetëm në këtë shfletues.",safeNote:"Përdor vetëm çelësin publik anon/publishable. Mos vendos kurrë service_role key.",connectBtn:"Lidhu / Connetti",forgetBtn:"Pastro konfigurimin",configHelp:"URL-në dhe çelësin publik i gjen te Supabase → Project Settings → API.",authTitle:"Hyr ose krijo llogari",loginTitle:"Hyrje / Accedi",emailLoginLabel:"Email",passwordLoginLabel:"Fjalëkalimi",loginBtn:"Hyr / Accedi",signupTitle:"Regjistrim / Registrati",nameLabel:"Emri dhe mbiemri",emailSignupLabel:"Email",passwordSignupLabel:"Fjalëkalimi (min. 8 karaktere)",signupBtn:"Regjistrohu / Registrati",signupHint:"Llogaritë e reja krijohen si punëtorë. Pronari caktohet veçmas në mënyrë të sigurt.",welcomeTitle:"Mirë se erdhe",logoutBtn:"Dil / Esci",roleOwner:"Pronari",roleEmployee:"Punëtor",addTitle:"Regjistro orët e ditës",dateLabel:"Data",hoursLabel:"Orët totale",saveHoursBtn:"Ruaj orët / Salva",entryHint:"Një regjistrim për çdo ditë. Nëse e ruan përsëri të njëjtën datë, orët përditësohen.",monthTitle:"Përmbledhja mujore",monthLabel:"Muaji",hoursCaption:"orë gjithsej",daysCaption:"ditë të regjistruara",historyTitle:"Regjistrimet e mia",empty:"Nuk ka regjistrime për këtë muaj.",ownerTitle:"Paneli i pronarit",ownerHint:"Totali mujor i çdo punëtori.",footerText:"Versioni fillestar",date:"Data",hours:"Orë",worker:"Punëtori",total:"Totali",days:"Ditë",needConfig:"Vendos URL-në dhe çelësin publik të Supabase.",connected:"Lidhja u krye. Hyr ose krijo llogari.",badConfig:"Lidhja dështoi. Kontrollo URL-në dhe çelësin publik.",fillFields:"Plotëso të gjitha fushat.",signupOk:"Llogaria u krijua. Kontrollo email-in për konfirmim nëse kërkohet.",loginOk:"Hyrja u krye.",saved:"Orët u ruajtën.",deleted:"Regjistrimi u fshi.",delete:"Fshi",confirmDelete:"Ta fshijmë këtë regjistrim?",ownerOnly:"Paneli i pronarit nuk mund të hapet: kontrollo rolin në databazë.",noOwnerData:"Nuk ka regjistrime për këtë muaj.",loadError:"Nuk mund të lexohen të dhënat. Kontrollo konfigurimin dhe politikat e databazës.",logoutError:"Gabim gjatë daljes.",signedOut:"Ke dalë nga llogaria.",hoursInvalid:"Shëno orë nga 0 deri në 24.",emailConfirm:"Nëse konfirmimi me email është aktiv, hape mesazhin e konfirmimit dhe pastaj hyr.",noProfile:"Profili nuk u gjet. Kontakto administratorin."},
+it:{tagline:"Registrazione delle ore di lavoro",configTitle:"Collegamento al database",configInfo:"Inserisci URL del progetto Supabase e chiave pubblica anon. Sono salvati solo in questo browser.",safeNote:"Usa solo la chiave pubblica anon/publishable. Non inserire mai la service_role key.",connectBtn:"Collega / Connetti",forgetBtn:"Cancella configurazione",configHelp:"Trovi URL e chiave pubblica in Supabase → Project Settings → API.",authTitle:"Accedi o crea un account",loginTitle:"Accesso",emailLoginLabel:"Email",passwordLoginLabel:"Password",loginBtn:"Accedi",signupTitle:"Registrazione",nameLabel:"Nome e cognome",emailSignupLabel:"Email",passwordSignupLabel:"Password (min. 8 caratteri)",signupBtn:"Registrati",signupHint:"I nuovi account vengono creati come dipendenti. Il titolare viene assegnato separatamente in modo sicuro.",welcomeTitle:"Benvenuto",logoutBtn:"Esci",roleOwner:"Titolare",roleEmployee:"Dipendente",addTitle:"Registra le ore del giorno",dateLabel:"Data",hoursLabel:"Ore totali",saveHoursBtn:"Salva ore",entryHint:"Una registrazione per giorno. Salvando di nuovo la stessa data, le ore vengono aggiornate.",monthTitle:"Riepilogo mensile",monthLabel:"Mese",hoursCaption:"ore totali",daysCaption:"giorni registrati",historyTitle:"Le mie registrazioni",empty:"Nessuna registrazione per questo mese.",ownerTitle:"Pannello del titolare",ownerHint:"Totale mensile per ogni dipendente.",footerText:"Versione iniziale",date:"Data",hours:"Ore",worker:"Dipendente",total:"Totale",days:"Giorni",needConfig:"Inserisci URL e chiave pubblica Supabase.",connected:"Connessione riuscita. Accedi o crea un account.",badConfig:"Connessione fallita. Controlla URL e chiave pubblica.",fillFields:"Compila tutti i campi.",signupOk:"Account creato. Controlla l'email per la conferma, se richiesta.",loginOk:"Accesso riuscito.",saved:"Ore salvate.",deleted:"Registrazione eliminata.",delete:"Elimina",confirmDelete:"Eliminare questa registrazione?",ownerOnly:"Pannello titolare non disponibile: verifica il ruolo nel database.",noOwnerData:"Nessuna registrazione per questo mese.",loadError:"Impossibile leggere i dati. Controlla configurazione e policy del database.",logoutError:"Errore durante l'uscita.",signedOut:"Sei uscito dall'account.",hoursInvalid:"Inserisci un numero di ore da 0 a 24.",emailConfirm:"Se la conferma email è attiva, apri il messaggio e poi accedi.",noProfile:"Profilo non trovato. Contatta l'amministratore."}
+};
+function lang(){return T[$("lang").value]||T.sq}
+function setText(){let t=lang();Object.keys(t).forEach(k=>{if($(k))$(k).textContent=t[k]});document.documentElement.lang=$("lang").value;renderEntries();if(currentUser)refreshData()}
+function message(text,error=false,app=false){let el=$(app?"appMessage":"message");el.textContent=text;el.classList.remove("hidden","error");if(error)el.classList.add("error")}
+function hideMessage(app=false){$(app?"appMessage":"message").classList.add("hidden")}
+function monthNow(){return new Date().toISOString().slice(0,7)}
+function dateNow(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function fmt(n){return Number(n||0).toLocaleString($("lang").value==="it"?"it-IT":"sq-AL",{maximumFractionDigits:2})}
+function connect(){let url=$("projectUrl").value.trim().replace(/\/$/,""),key=$("anonKey").value.trim();if(!url||!key){message(lang().needConfig,true);return}try{sb=window.supabase.createClient(url,key);localStorage.setItem("mp_url",url);localStorage.setItem("mp_key",key);$("configView").classList.add("hidden");$("authView").classList.remove("hidden");message(lang().connected,false);checkSession()}catch(e){message(lang().badConfig,true)}}
+function initConfig(){ $("projectUrl").value=localStorage.getItem("mp_url")||"";$("anonKey").value=localStorage.getItem("mp_key")||"";if($("projectUrl").value&&$("anonKey").value)connect(); }
+async function checkSession(){if(!sb)return;const {data,error}=await sb.auth.getSession();if(error)return;if(data.session){currentUser=data.session.user;await loadProfileAndShow()}else{currentUser=null;currentProfile=null;$("appView").style.display="none";$("authView").classList.remove("hidden")}}
+async function signUp(){hideMessage();let name=$("fullName").value.trim(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;if(!name||!email||password.length<8){message(lang().fillFields,true);return}let {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});if(error){message(error.message,true);return}message(lang().signupOk+" "+lang().emailConfirm);if(data.session){currentUser=data.user;await loadProfileAndShow()}}
+async function signIn(){hideMessage();let email=$("loginEmail").value.trim(),password=$("loginPassword").value;if(!email||!password){message(lang().fillFields,true);return}let {data,error}=await sb.auth.signInWithPassword({email,password});if(error){message(error.message,true);return}currentUser=data.user;message(lang().loginOk);await loadProfileAndShow()}
+async function loadProfileAndShow(){const {data,error}=await sb.from("profiles").select("id,full_name,role").eq("id",currentUser.id).maybeSingle();if(error||!data){message(lang().noProfile,true);return}currentProfile=data;$("authView").classList.add("hidden");$("appView").style.display="block";$("welcomeTitle").textContent=lang().welcomeTitle+", "+data.full_name;$("userRole").textContent=data.role==="owner"?lang().roleOwner:lang().roleEmployee;$("ownerPanel").classList.toggle("hidden",data.role!=="owner");$("workDate").value=dateNow();$("monthPick").value=monthNow();await refreshData()}
+async function refreshData(){if(!sb||!currentUser||!currentProfile)return;let month=$("monthPick").value||monthNow();let start=month+"-01";let endDate=new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),1);let end=`${endDate.getFullYear()}-${String(endDate.getMonth()+1).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;let {data,error}=await sb.from("work_entries").select("id,user_id,work_date,hours,notes").gte("work_date",start).lt("work_date",end).order("work_date",{ascending:false});if(error){message(lang().loadError,true,true);return}entries=data||[];let total=entries.reduce((a,e)=>a+Number(e.hours),0);$("monthTotal").textContent=fmt(total);$("daysTotal").textContent=entries.length;renderEntries();if(currentProfile.role==="owner")await loadOwner(month)}
+function renderEntries(){if(!$("entriesList"))return;let t=lang();let list=entries.filter(e=>e.user_id===currentUser?.id);if(!list.length){$("entriesList").textContent=t.empty;return}$("entriesList").innerHTML=list.map(e=>`<div class="entry"><div><strong>${escapeHtml(e.work_date)}</strong><div class="muted">${t.hours}: ${fmt(e.hours)}</div></div><button class="danger smallbtn" data-delete="${e.id}">${t.delete}</button></div>`).join("");$("entriesList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteEntry(b.dataset.delete))}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function saveHours(){hideMessage(true);let date=$("workDate").value,h=Number($("hours").value);if(!date||$("hours").value===""||!Number.isFinite(h)||h<0||h>24){message(lang().hoursInvalid,true,true);return}let {error}=await sb.from("work_entries").upsert({user_id:currentUser.id,work_date:date,hours:h},{onConflict:"user_id,work_date"});if(error){message(error.message,true,true);return}message(lang().saved,false,true);$("hours").value="";await refreshData()}
+async function deleteEntry(id){if(!confirm(lang().confirmDelete))return;let {error}=await sb.from("work_entries").delete().eq("id",id);if(error){message(error.message,true,true);return}message(lang().deleted,false,true);await refreshData()}
+async function loadOwner(month){let {data:profiles,error:pErr}=await sb.from("profiles").select("id,full_name,role").eq("role","employee").order("full_name");if(pErr){$("ownerContent").textContent=lang().loadError;return}let {data:all,error}=await sb.from("work_entries").select("user_id,hours,work_date").gte("work_date",month+"-01").lt("work_date",nextMonth(month));if(error){$("ownerContent").textContent=lang().loadError;return}let sums={};(all||[]).forEach(e=>{if(!sums[e.user_id])sums[e.user_id]={hours:0,days:0};sums[e.user_id].hours+=Number(e.hours);sums[e.user_id].days++});let t=lang();if(!profiles?.length){$("ownerContent").textContent=t.noOwnerData;return}$("ownerContent").innerHTML=`<div style="overflow-x:auto"><table><thead><tr><th>${t.worker}</th><th>${t.total}</th><th>${t.days}</th></tr></thead><tbody>${profiles.map(p=>`<tr><td>${escapeHtml(p.full_name)}</td><td><strong>${fmt(sums[p.id]?.hours||0)}</strong></td><td>${sums[p.id]?.days||0}</td></tr>`).join("")}</tbody></table></div>`}
+function nextMonth(m){let y=Number(m.slice(0,4)),mo=Number(m.slice(5,7));if(mo===12){y++;mo=1}else mo++;return `${y}-${String(mo).padStart(2,"0")}-01`}
+async function logout(){let {error}=await sb.auth.signOut();if(error){message(lang().logoutError,true,true);return}currentUser=null;currentProfile=null;entries=[];$("appView").style.display="none";$("authView").classList.remove("hidden");message(lang().signedOut)}
+$("connectBtn").onclick=connect;$("forgetBtn").onclick=()=>{localStorage.removeItem("mp_url");localStorage.removeItem("mp_key");$("projectUrl").value="";$("anonKey").value="";sb=null;message("Konfigurimi u pastrua.")};$("signupBtn").onclick=signUp;$("loginBtn").onclick=signIn;$("saveHoursBtn").onclick=saveHours;$("logoutBtn").onclick=logout;$("monthPick").onchange=refreshData;$("lang").onchange=setText;
+sb=null;initConfig();setText();
+</script>
+</body>
+</html>
